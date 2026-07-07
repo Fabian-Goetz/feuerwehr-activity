@@ -185,6 +185,9 @@ export class Play {
     const solo = this.store.soloResult();
     if (solo) this.leaderboard.record(solo);
     this.store.nextTurn();
-    this.router.navigate([this.store.isOver() ? '/result' : '/board']);
+    const dest = this.store.isOver() ? '/result' : '/board';
+    this.store.clearRound();
+    // replaceUrl so the resolved round isn't left in history for an edge-swipe to resurrect
+    this.router.navigate([dest], { replaceUrl: true });
   }
 }

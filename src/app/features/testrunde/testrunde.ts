@@ -96,6 +96,6 @@ export class Testrunde {
 
   startGame(): void {
     clearInterval(this.timer);
-    this.router.navigate(['/board']);
+    this.router.navigate(['/board'], { replaceUrl: true });
   }
 }

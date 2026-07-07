@@ -144,6 +144,6 @@ export class Setup {
       phase3Enabled: choice !== 'off',
       phase3Mode: choice === 'plan' ? 'plan' : 'vehicle',
     });
-    this.router.navigate(['/testrunde']);
+    this.router.navigate(['/testrunde'], { replaceUrl: true });
   }
 }

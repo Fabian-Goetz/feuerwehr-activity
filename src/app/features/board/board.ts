@@ -207,10 +207,10 @@ export class Board {
 
   constructor() {
     if (this.store.teams().length === 0) {
-      this.router.navigate(['/setup']);
+      this.router.navigate(['/setup'], { replaceUrl: true });
     }
     effect(() => {
-      if (this.store.isOver()) this.router.navigate(['/result']);
+      if (this.store.isOver()) this.router.navigate(['/result'], { replaceUrl: true });
     });
   }
 
@@ -248,6 +248,6 @@ export class Board {
 
   play(d: Difficulty): void {
     this.store.startRound(d);
-    this.router.navigate(['/play']);
+    this.router.navigate(['/play'], { replaceUrl: true });
   }
 }

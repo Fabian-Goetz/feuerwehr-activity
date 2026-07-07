@@ -153,6 +153,13 @@ export class GameStore {
     this._turnIdx.set((this._turnIdx() + 1) % order.length);
   }
 
+  /** End the active round — no card in progress (so a re-entered play screen has nothing to resume). */
+  clearRound(): void {
+    this._currentCard.set(null);
+    this.currentMode = null;
+    this.currentDifficulty = null;
+  }
+
   solved(): void {
     const team = this.currentTeam();
     if (team === null) return;

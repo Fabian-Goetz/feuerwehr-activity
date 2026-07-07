@@ -134,6 +134,15 @@ describe('GameStore', () => {
     expect(store.positions()[0]).toBe(4);
   });
 
+  it('clearRound drops the active card so a re-entered play screen has nothing to resume', () => {
+    const store = makeStore();
+    store.startGame(['A', 'B']);
+    store.startRound('Leicht');
+    expect(store.currentCard()).not.toBeNull();
+    store.clearRound();
+    expect(store.currentCard()).toBeNull();
+  });
+
   it('tracks the number of Züge each team has taken', () => {
     const store = makeStore();
     store.startGame(['A', 'B']); // phase 3 off in test settings
