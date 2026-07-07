@@ -1,1 +1,42 @@
-/* You can add global styles to this file, and also import other style files */
+@import 'tailwindcss';
+
+/* Firetruck theme tokens — lifted from the colleague's Python palette. */
+@theme {
+  --color-ink: #0a0e15;
+  --color-elevated: #111823;
+  --color-card: #131b27;
+  --color-input: #1c2634;
+  --color-edge: #263243;
+  --color-ember: #ef4444;
+  --color-ember-bright: #f87171;
+  --color-flame: #fb923c;
+  --color-go: #22c55e;
+  --color-warn: #eab308;
+  --color-sky: #3b82f6;
+  --color-muted: #64748b;
+  --color-subtle: #94a3b8;
+  --color-mode-beschreiben: #22c55e;
+  --color-mode-zeichnen: #3b82f6;
+  --color-mode-pantomime: #f97316;
+  --color-mode-ziel: #eab308;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--color-ink);
+  color: #f1f5f9;
+  font-family: system-ui, 'Segoe UI', Helvetica, sans-serif;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Tailwind v4 preflight leaves buttons at cursor:auto — restore the pointer. */
+button:not(:disabled),
+label:has(> input[type='checkbox']),
+label:has(> input[type='file']) {
+  cursor: pointer;
+}
