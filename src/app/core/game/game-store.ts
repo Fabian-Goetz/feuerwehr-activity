@@ -150,7 +150,12 @@ export class GameStore {
   nextTurn(): void {
     const order = this._turnOrder();
     if (order.length === 0) return;
-    this._turnIdx.set((this._turnIdx() + 1) % order.length);
+    // Advance past the team that actually played. currentTeam() skips finished teams,
+    // so it may resolve ahead of turnIdx; a blind +1 would then re-serve that same team.
+    const team = this.currentTeam();
+    if (team !== null) {
+      this._turnIdx.set((order.indexOf(team) + 1) % order.length);
+    }
   }
 
   /** End the active round — no card in progress (so a re-entered play screen has nothing to resume). */

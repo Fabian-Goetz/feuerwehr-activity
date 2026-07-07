@@ -2,7 +2,7 @@ import { Component, DestroyRef, computed, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { GameStore } from '../../core/game/game-store';
 import { LeaderboardService } from '../../core/game/leaderboard.service';
-import { Compartment } from '../../core/models/card';
+import { Compartment, Mode, MODE_LABELS } from '../../core/models/card';
 import { LfSketch } from '../../shared/lf-sketch';
 
 @Component({
@@ -13,7 +13,7 @@ import { LfSketch } from '../../shared/lf-sketch';
       <header class="px-4 py-5 text-center text-white" [style.background]="modeColor()">
         <p class="text-lg font-bold">{{ currentName() }} ist dran</p>
         <p class="text-sm opacity-90">
-          {{ store.currentCellMode() }} · {{ card()?.difficulty }} · {{ store.currentPoints() }} Punkte
+          {{ modeLabel() }} · {{ card()?.difficulty }} · {{ store.currentPoints() }} Punkte
         </p>
       </header>
 
@@ -140,6 +140,11 @@ export class Play {
     return { Beschreiben: '#22c55e', Zeichnen: '#3b82f6', Pantomime: '#f97316' }[
       this.store.currentCellMode() as 'Beschreiben' | 'Zeichnen' | 'Pantomime'
     ] ?? '#ef4444';
+  }
+
+  modeLabel(): string {
+    const m = this.store.currentCellMode();
+    return m && m !== 'Ziel' ? MODE_LABELS[m as Mode] : '';
   }
 
   skip(): void {

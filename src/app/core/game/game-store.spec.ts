@@ -74,6 +74,32 @@ describe('GameStore', () => {
     expect(store.currentTeam()).toBe(0);
   });
 
+  it('rotates fairly after a middle team finishes (no consecutive double turns)', () => {
+    const store = makeStore(); // Ziel at index 4
+    store.startGame(['A', 'B', 'C']); // deterministic order [0, 1, 2]
+
+    // A plays, does not finish.
+    expect(store.currentTeam()).toBe(0);
+    store.startRound('Leicht');
+    store.failRound();
+    store.nextTurn();
+
+    // B reaches Ziel in one Schwer solve (5 points ≥ goal index 4) and finishes.
+    expect(store.currentTeam()).toBe(1);
+    store.startRound('Schwer');
+    store.solved();
+    expect(store.finished()).toContain(1);
+    store.nextTurn();
+
+    // From here B must be skipped and A/C alternate — never the same team twice.
+    const seq: (number | null)[] = [];
+    for (let i = 0; i < 4; i++) {
+      seq.push(store.currentTeam());
+      store.nextTurn();
+    }
+    expect(seq).toEqual([0, 2, 0, 2]);
+  });
+
   it('allows one skip per turn, swaps the card, and blocks a second skip', () => {
     const store = makeStore();
     store.startGame(['A', 'B']);

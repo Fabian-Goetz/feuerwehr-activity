@@ -1,4 +1,4 @@
-import { Card, Compartment } from '../models/card';
+import { Card, Compartment, DIFFICULTIES, MODES } from '../models/card';
 import { Settings, DEFAULT_SETTINGS } from '../models/settings';
 import { LeaderboardEntry } from '../models/leaderboard';
 import { SEED_CARDS } from '../seed/seed-cards';
@@ -16,12 +16,41 @@ const LOCATION_ALIASES: Record<string, Compartment> = {
   'Fach hinten Mannschaftsraum': 'Bank hinten',
 };
 
-/** Migrate a stored card: legacy singular `location` → `locations[]`, and remap renamed Fächer. */
+/** Migrate a stored card: legacy singular `location` → `locations[]`, remap renamed Fächer, default taboo. */
 function normalizeCard(c: Card & { location?: Compartment }): Card {
   const raw = c.locations ?? (c.location ? [c.location] : undefined);
   const locations = raw?.map((l) => LOCATION_ALIASES[l] ?? l);
   const { location: _drop, ...rest } = c;
-  return { ...rest, ...(locations?.length ? { locations } : {}) };
+  return { ...rest, taboo: Array.isArray(rest.taboo) ? rest.taboo : [], ...(locations?.length ? { locations } : {}) };
+}
+
+const MODE_SET = new Set<string>(MODES);
+const DIFF_SET = new Set<string>(DIFFICULTIES);
+
+/** Keep only entries that look like cards (valid mode/difficulty/term), then normalize them. */
+export function sanitizeCards(input: unknown): Card[] {
+  if (!Array.isArray(input)) return [];
+  return input
+    .filter(
+      (c): c is Card & { location?: Compartment } =>
+        !!c &&
+        typeof c === 'object' &&
+        MODE_SET.has((c as { mode?: unknown }).mode as string) &&
+        DIFF_SET.has((c as { difficulty?: unknown }).difficulty as string) &&
+        typeof (c as { term?: unknown }).term === 'string',
+    )
+    .map(normalizeCard);
+}
+
+/** Fill any missing settings fields from the defaults (forward-compatible with new fields). */
+export function mergeSettings(stored: Partial<Settings> | null | undefined): Settings {
+  if (!stored) return DEFAULT_SETTINGS;
+  return {
+    ...DEFAULT_SETTINGS,
+    ...stored,
+    roundSeconds: { ...DEFAULT_SETTINGS.roundSeconds, ...stored.roundSeconds },
+    points: { ...DEFAULT_SETTINGS.points, ...stored.points },
+  };
 }
 
 export class LocalStoragePersistence implements PersistencePort {
@@ -36,7 +65,7 @@ export class LocalStoragePersistence implements PersistencePort {
   }
 
   loadSettings(): Settings {
-    return this.read<Settings>(KEYS.settings) ?? DEFAULT_SETTINGS;
+    return mergeSettings(this.read<Partial<Settings>>(KEYS.settings));
   }
 
   saveSettings(settings: Settings): void {
@@ -54,7 +83,12 @@ export class LocalStoragePersistence implements PersistencePort {
 
   private read<T>(key: string): T | null {
     const raw = this.storage.getItem(key);
-    return raw === null ? null : (JSON.parse(raw) as T);
+    if (raw === null) return null;
+    try {
+      return JSON.parse(raw) as T;
+    } catch {
+      return null; // corrupt value — fall back to seed/defaults rather than crashing bootstrap
+    }
   }
 
   private write(key: string, value: unknown): void {

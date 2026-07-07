@@ -1,7 +1,7 @@
-import { Component, computed, effect, inject } from '@angular/core';
-import { Router, RouterLink } from '@angular/router';
+import { Component, computed, effect, inject, signal } from '@angular/core';
+import { Router } from '@angular/router';
 import { GameStore } from '../../core/game/game-store';
-import { Difficulty, DIFFICULTIES, Mode } from '../../core/models/card';
+import { Difficulty, DIFFICULTIES, Mode, MODE_LABELS } from '../../core/models/card';
 
 const TEAM_COLORS = ['#ef4444', '#3b82f6', '#22c55e', '#eab308', '#a855f7', '#14b8a6', '#f97316', '#6366f1'];
 
@@ -10,12 +10,6 @@ const MODE_BG: Record<Mode | 'Ziel', string> = {
   Zeichnen: 'bg-mode-zeichnen',
   Pantomime: 'bg-mode-pantomime',
   Ziel: 'bg-mode-ziel',
-};
-
-const MODE_DISPLAY: Record<Mode, string> = {
-  Beschreiben: 'Beschreiben',
-  Zeichnen: 'Zeichnen',
-  Pantomime: 'Darstellen',
 };
 
 const MODE_DOT: Record<Mode | 'Ziel', string> = {
@@ -37,7 +31,7 @@ interface Cell {
 
 @Component({
   selector: 'fwa-board',
-  imports: [RouterLink],
+  imports: [],
   template: `
     <div class="flex min-h-dvh flex-col lg:h-dvh lg:flex-row">
       <!-- ============ SIDEBAR ============ -->
@@ -98,13 +92,14 @@ interface Cell {
           </ul>
         </div>
 
-        <div class="mt-auto flex gap-2 pt-2">
-          <a routerLink="/leaderboard" class="flex flex-1 items-center justify-center gap-2 rounded-lg border border-edge bg-input py-2.5 text-sm font-bold hover:bg-white/10">
-            🏆 Wertung
-          </a>
-          <a routerLink="/setup" class="flex flex-1 items-center justify-center gap-2 rounded-lg bg-ember py-2.5 text-sm font-bold text-white hover:bg-ember-bright">
+        <div class="mt-auto pt-2">
+          <button
+            type="button"
+            class="flex w-full items-center justify-center gap-2 rounded-lg bg-ember py-2.5 text-sm font-bold text-white hover:bg-ember-bright"
+            (click)="askNewGame.set(true)"
+          >
             ↺ Neues Spiel
-          </a>
+          </button>
         </div>
       </aside>
 
@@ -172,6 +167,20 @@ interface Cell {
           </div>
         </div>
       </main>
+
+      @if (askNewGame()) {
+        <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-6" (click)="askNewGame.set(false)">
+          <div class="w-full max-w-sm rounded-2xl border border-edge bg-card p-6 text-center shadow-2xl" (click)="$event.stopPropagation()">
+            <div class="text-4xl">🚒</div>
+            <h2 class="mt-2 text-xl font-bold">Neues Spiel starten?</h2>
+            <p class="mt-1 text-sm text-muted">Der aktuelle Spielstand geht dabei verloren.</p>
+            <div class="mt-5 flex gap-3">
+              <button type="button" class="flex-1 rounded-lg bg-input py-3 font-bold hover:bg-white/10" (click)="askNewGame.set(false)">Abbrechen</button>
+              <button type="button" class="flex-1 rounded-lg bg-ember py-3 font-bold text-white hover:bg-ember-bright" (click)="newGame()">Ja, neues Spiel</button>
+            </div>
+          </div>
+        </div>
+      }
     </div>
   `,
 })
@@ -179,6 +188,7 @@ export class Board {
   readonly store = inject(GameStore);
   private readonly router = inject(Router);
   readonly difficulties = DIFFICULTIES;
+  readonly askNewGame = signal(false);
 
   readonly legend = [
     { label: 'Beschreiben', color: '#22c55e' },
@@ -229,7 +239,7 @@ export class Board {
   };
   aufgabe = () => {
     const m = this.store.currentCellMode();
-    return m && m !== 'Ziel' ? MODE_DISPLAY[m as Mode] : 'Ziel';
+    return m && m !== 'Ziel' ? MODE_LABELS[m as Mode] : 'Ziel';
   };
   aufgabeColor = () => MODE_DOT[this.store.currentCellMode() ?? 'Beschreiben'];
 
@@ -249,5 +259,10 @@ export class Board {
   play(d: Difficulty): void {
     this.store.startRound(d);
     this.router.navigate(['/play'], { replaceUrl: true });
+  }
+
+  newGame(): void {
+    this.askNewGame.set(false);
+    this.router.navigate(['/setup']);
   }
 }

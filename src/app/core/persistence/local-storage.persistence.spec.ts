@@ -1,4 +1,4 @@
-import { LocalStoragePersistence } from './local-storage.persistence';
+import { LocalStoragePersistence, sanitizeCards, mergeSettings } from './local-storage.persistence';
 import { SEED_CARDS } from '../seed/seed-cards';
 import { DEFAULT_SETTINGS } from '../models/settings';
 import { Settings } from '../models/settings';
@@ -58,6 +58,51 @@ describe('LocalStoragePersistence', () => {
       { id: 'y', mode: 'Zeichnen', difficulty: 'Leicht', term: 'T', taboo: [], location: 'Dach' } as unknown as import('../models/card').Card,
     ]);
     expect(p.loadCards()[0].locations).toEqual(['Dach']);
+  });
+
+  it('falls back to seed cards and defaults when stored JSON is corrupt', () => {
+    const storage = fakeStorage();
+    storage.setItem('fwa.cards', '{not valid json');
+    storage.setItem('fwa.settings', 'oops');
+    storage.setItem('fwa.leaderboard', '<<<');
+    const p = new LocalStoragePersistence(storage);
+    expect(p.loadCards()).toEqual(SEED_CARDS);
+    expect(p.loadSettings()).toEqual(DEFAULT_SETTINGS);
+    expect(p.loadLeaderboard()).toEqual([]);
+  });
+
+  it('merges stored settings over defaults so missing fields are filled in', () => {
+    const storage = fakeStorage();
+    storage.setItem('fwa.settings', JSON.stringify({ points: { Leicht: 9, Mittel: 3, Schwer: 5 } }));
+    const p = new LocalStoragePersistence(storage);
+    const s = p.loadSettings();
+    expect(s.points.Leicht).toBe(9);
+    expect(s.roundSeconds).toEqual(DEFAULT_SETTINGS.roundSeconds);
+    expect(s.phase3Enabled).toBe(DEFAULT_SETTINGS.phase3Enabled);
+    expect(s.phase3Mode).toBe(DEFAULT_SETTINGS.phase3Mode);
+  });
+
+  it('sanitizeCards drops malformed entries, defaults taboo, and normalizes legacy fields', () => {
+    const result = sanitizeCards([
+      { id: 'ok', mode: 'Beschreiben', difficulty: 'Leicht', term: 'A', taboo: [] },
+      { id: 'legacy', mode: 'Zeichnen', difficulty: 'Leicht', term: 'B', location: 'Dach' },
+      { id: 'bad-mode', mode: 'Nonsense', difficulty: 'Leicht', term: 'C' },
+      { id: 'no-term', mode: 'Pantomime', difficulty: 'Mittel' },
+      null,
+      'garbage',
+      { id: 'no-taboo', mode: 'Pantomime', difficulty: 'Mittel', term: 'D' },
+    ]);
+    expect(result.map((c) => c.id)).toEqual(['ok', 'legacy', 'no-taboo']);
+    expect(result.find((c) => c.id === 'legacy')?.locations).toEqual(['Dach']);
+    expect(result.find((c) => c.id === 'no-taboo')?.taboo).toEqual([]);
+  });
+
+  it('mergeSettings fills missing fields from defaults', () => {
+    expect(mergeSettings(null)).toEqual(DEFAULT_SETTINGS);
+    const merged = mergeSettings({ points: { Leicht: 9 } } as Partial<Settings>);
+    expect(merged.points.Leicht).toBe(9);
+    expect(merged.points.Mittel).toBe(DEFAULT_SETTINGS.points.Mittel);
+    expect(merged.roundSeconds).toEqual(DEFAULT_SETTINGS.roundSeconds);
   });
 
   it('reads the leaderboard back sorted by fewest rounds', () => {

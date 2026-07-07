@@ -1,6 +1,13 @@
 export const MODES = ['Beschreiben', 'Zeichnen', 'Pantomime'] as const;
 export type Mode = (typeof MODES)[number];
 
+/** Player-facing labels for the modes (the mime mode is shown as "Darstellen"). */
+export const MODE_LABELS: Record<Mode, string> = {
+  Beschreiben: 'Beschreiben',
+  Zeichnen: 'Zeichnen',
+  Pantomime: 'Darstellen',
+};
+
 export const DIFFICULTIES = ['Leicht', 'Mittel', 'Schwer'] as const;
 export type Difficulty = (typeof DIFFICULTIES)[number];
 

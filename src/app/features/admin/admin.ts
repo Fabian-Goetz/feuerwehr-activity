@@ -1,6 +1,7 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { PERSISTENCE } from '../../core/persistence/persistence.port';
+import { mergeSettings, sanitizeCards } from '../../core/persistence/local-storage.persistence';
 import { Card, Compartment, DIFFICULTIES, Difficulty, MODES, Mode } from '../../core/models/card';
 import { Phase3Mode, Settings } from '../../core/models/settings';
 import { LfSketch } from '../../shared/lf-sketch';
@@ -353,12 +354,14 @@ export class Admin {
     file.text().then((text) => {
       try {
         const parsed = JSON.parse(text);
-        if (Array.isArray(parsed.cards)) this.commit(parsed.cards);
+        const cards = sanitizeCards(parsed.cards);
+        if (cards.length) this.commit(cards);
         if (parsed.settings) {
-          this.s.set(parsed.settings);
-          this.persistence.saveSettings(parsed.settings);
+          const settings = mergeSettings(parsed.settings);
+          this.s.set(settings);
+          this.persistence.saveSettings(settings);
         }
-        this.importMsg.set(`Importiert: ${parsed.cards?.length ?? 0} Karten.`);
+        this.importMsg.set(`Importiert: ${cards.length} Karten.`);
       } catch {
         this.importMsg.set('Fehler: ungültige JSON-Datei.');
       }
