@@ -14,7 +14,7 @@ export type Difficulty = (typeof DIFFICULTIES)[number];
 /** Compartments of the LF (Fabian's truck). Order drives the on-screen sketch layout. */
 export const COMPARTMENTS = [
   'G1', 'G2', 'G3', 'G4', 'G5', 'G6',
-  'Fahrerkabine', 'Angriffstrupp', 'Bank hinten', 'Dach',
+  'Fahrerkabine', 'Angriffstrupp', 'Bank hinten', 'Dach', 'Fach GR', 'Haspel',
 ] as const;
 export type Compartment = (typeof COMPARTMENTS)[number];
 

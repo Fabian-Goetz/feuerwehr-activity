@@ -19,7 +19,7 @@ interface Zone {
 @Component({
   selector: 'fwa-lf-sketch',
   template: `
-    <svg viewBox="0 0 300 384" class="mx-auto w-full max-w-md select-none" xmlns="http://www.w3.org/2000/svg">
+    <svg viewBox="0 0 300 430" class="mx-auto w-full max-w-md select-none" xmlns="http://www.w3.org/2000/svg">
       <!-- wheels -->
       <g fill="#0b0f16" stroke="#475569" stroke-width="2">
         <rect x="20" y="60" width="16" height="40" rx="5" />
@@ -34,6 +34,10 @@ interface Zone {
       <!-- orientation -->
       <text x="150" y="9" text-anchor="middle" font-size="8" fill="#64748b" style="pointer-events:none">▲ VORNE</text>
       <text x="150" y="381" text-anchor="middle" font-size="8" fill="#64748b" style="pointer-events:none">HECK</text>
+
+      <!-- Haspel behind the truck: drawbar + reel body (decorative frame) -->
+      <line x1="150" y1="370" x2="150" y2="388" stroke="#475569" stroke-width="2" style="pointer-events:none" />
+      <circle cx="150" cy="404" r="20" fill="none" stroke="#475569" stroke-width="1.5" style="pointer-events:none" />
 
       <!-- compartments -->
       @for (z of zones; track z.c) {
@@ -52,8 +56,8 @@ interface Zone {
 
       <!-- Mannschaftskabine grouping (decorative) -->
       <g style="pointer-events:none">
-        <rect x="92" y="74" width="116" height="138" rx="6" fill="none" stroke="#64748b" stroke-width="1" stroke-dasharray="4 3" />
-        <text x="150" y="83" text-anchor="middle" font-size="7" fill="#94a3b8" letter-spacing="0.5">MANNSCHAFTSKABINE</text>
+        <rect x="92" y="78" width="116" height="124" rx="6" fill="none" stroke="#64748b" stroke-width="1" stroke-dasharray="4 3" />
+        <text x="150" y="88" text-anchor="middle" font-size="7" fill="#94a3b8" letter-spacing="0.5">MANNSCHAFTSKABINE</text>
       </g>
 
       <!-- windshield hint at the front of the cab (decorative) -->
@@ -79,10 +83,13 @@ export class LfSketch {
     { c: 'G2', x: 210, y: 78, w: 46, h: 74, label: 'G2', fs: 13 },
     { c: 'G4', x: 210, y: 162, w: 46, h: 74, label: 'G4', fs: 13 },
     { c: 'G6', x: 210, y: 246, w: 46, h: 74, label: 'G6', fs: 13 },
-    // centre front→rear: Mannschaftskabine (Angriffstrupp, Bank hinten), then Dach
-    { c: 'Angriffstrupp', x: 96, y: 90, w: 108, h: 54, label: 'Angriffstrupp', fs: 9 },
-    { c: 'Bank hinten', x: 96, y: 152, w: 108, h: 54, label: 'Bank hinten', fs: 9 },
-    { c: 'Dach', x: 96, y: 218, w: 108, h: 102, label: 'Dach', fs: 13 },
+    // centre front→rear: Mannschaftskabine (Angriffstrupp, Bank hinten), then Dach, Fach GR
+    { c: 'Angriffstrupp', x: 96, y: 96, w: 108, h: 48, label: 'Angriffstrupp', fs: 9 },
+    { c: 'Bank hinten', x: 96, y: 150, w: 108, h: 48, label: 'Bank hinten', fs: 9 },
+    { c: 'Dach', x: 96, y: 204, w: 108, h: 72, label: 'Dach', fs: 13 },
+    { c: 'Fach GR', x: 96, y: 282, w: 108, h: 74, label: 'Fach GR', fs: 12 },
+    // behind the truck: hose reel
+    { c: 'Haspel', x: 96, y: 388, w: 108, h: 32, label: 'Haspel', fs: 11 },
   ];
 
   tap(c: Compartment): void {
