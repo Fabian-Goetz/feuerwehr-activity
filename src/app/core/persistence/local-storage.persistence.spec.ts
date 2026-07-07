@@ -44,6 +44,22 @@ describe('LocalStoragePersistence', () => {
     expect(p.loadLeaderboard()).toEqual([]);
   });
 
+  it('migrates renamed compartment names on load', () => {
+    const p = new LocalStoragePersistence(fakeStorage());
+    p.saveCards([
+      { id: 'x', mode: 'Beschreiben', difficulty: 'Leicht', term: 'T', taboo: [], locations: ['Fach unter Angriffstrupp'] } as unknown as import('../models/card').Card,
+    ]);
+    expect(p.loadCards()[0].locations).toEqual(['Angriffstrupp']);
+  });
+
+  it('migrates a legacy single location field to a locations array', () => {
+    const p = new LocalStoragePersistence(fakeStorage());
+    p.saveCards([
+      { id: 'y', mode: 'Zeichnen', difficulty: 'Leicht', term: 'T', taboo: [], location: 'Dach' } as unknown as import('../models/card').Card,
+    ]);
+    expect(p.loadCards()[0].locations).toEqual(['Dach']);
+  });
+
   it('reads the leaderboard back sorted by fewest rounds', () => {
     const p = new LocalStoragePersistence(fakeStorage());
     p.saveLeaderboard([

@@ -1,4 +1,4 @@
-import { Card } from '../models/card';
+import { Card, Compartment } from '../models/card';
 import { Settings, DEFAULT_SETTINGS } from '../models/settings';
 import { LeaderboardEntry } from '../models/leaderboard';
 import { SEED_CARDS } from '../seed/seed-cards';
@@ -10,11 +10,25 @@ const KEYS = {
   leaderboard: 'fwa.leaderboard',
 } as const;
 
+/** Renamed compartments — remap stored cards saved under old names. */
+const LOCATION_ALIASES: Record<string, Compartment> = {
+  'Fach unter Angriffstrupp': 'Angriffstrupp',
+  'Fach hinten Mannschaftsraum': 'Bank hinten',
+};
+
+/** Migrate a stored card: legacy singular `location` → `locations[]`, and remap renamed Fächer. */
+function normalizeCard(c: Card & { location?: Compartment }): Card {
+  const raw = c.locations ?? (c.location ? [c.location] : undefined);
+  const locations = raw?.map((l) => LOCATION_ALIASES[l] ?? l);
+  const { location: _drop, ...rest } = c;
+  return { ...rest, ...(locations?.length ? { locations } : {}) };
+}
+
 export class LocalStoragePersistence implements PersistencePort {
   constructor(private readonly storage: Storage) {}
 
   loadCards(): Card[] {
-    return this.read<Card[]>(KEYS.cards) ?? SEED_CARDS;
+    return (this.read<Card[]>(KEYS.cards) ?? SEED_CARDS).map(normalizeCard);
   }
 
   saveCards(cards: Card[]): void {
