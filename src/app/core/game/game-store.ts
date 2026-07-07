@@ -27,6 +27,7 @@ export class GameStore {
   private readonly _currentPoints = signal(0);
   private readonly _finished = signal<number[]>([]);
   private readonly _roundsPlayed = signal(0);
+  private readonly _turnsByTeam = signal<number[]>([]);
   private readonly _soloResult = signal<SoloResult | null>(null);
   private currentMode: Mode | null = null;
   private currentDifficulty: Difficulty | null = null;
@@ -40,6 +41,8 @@ export class GameStore {
   readonly finished: Signal<number[]> = this._finished.asReadonly();
   readonly soloResult: Signal<SoloResult | null> = this._soloResult.asReadonly();
   readonly currentPoints: Signal<number> = this._currentPoints.asReadonly();
+  /** Number of turns (Züge) each team has taken, by team index. */
+  readonly turnsByTeam: Signal<number[]> = this._turnsByTeam.asReadonly();
 
   /** The current team's board cell (which mode they must play). */
   readonly currentCellMode = computed(() => {
@@ -118,6 +121,7 @@ export class GameStore {
     this._turnIdx.set(0);
     this._finished.set([]);
     this._roundsPlayed.set(0);
+    this._turnsByTeam.set(teamNames.map(() => 0));
     this._soloResult.set(null);
   }
 
@@ -153,6 +157,7 @@ export class GameStore {
     const team = this.currentTeam();
     if (team === null) return;
     this._roundsPlayed.update((r) => r + 1);
+    this.countTurn(team);
     // With phase 3 as a gate, the guess only counts once placement is confirmed.
     if (!this.phase3Active) {
       this.advanceTeam(team, this._currentPoints());
@@ -160,8 +165,16 @@ export class GameStore {
   }
 
   failRound(): void {
-    if (this.currentTeam() === null) return;
+    const team = this.currentTeam();
+    if (team === null) return;
     this._roundsPlayed.update((r) => r + 1);
+    this.countTurn(team);
+  }
+
+  private countTurn(team: number): void {
+    const turns = [...this._turnsByTeam()];
+    turns[team] = (turns[team] ?? 0) + 1;
+    this._turnsByTeam.set(turns);
   }
 
   /** Resolve the LF-placement gate: correct placement advances by the card points, wrong placement does not. */

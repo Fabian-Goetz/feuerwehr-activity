@@ -134,6 +134,15 @@ describe('GameStore', () => {
     expect(store.positions()[0]).toBe(4);
   });
 
+  it('tracks the number of Züge each team has taken', () => {
+    const store = makeStore();
+    store.startGame(['A', 'B']); // phase 3 off in test settings
+    store.startRound('Leicht'); store.solved(); store.nextTurn(); // A
+    store.startRound('Leicht'); store.failRound(); store.nextTurn(); // B
+    store.startRound('Leicht'); store.solved(); // A again
+    expect(store.turnsByTeam()).toEqual([2, 1]);
+  });
+
   it('honours the phase-3 mode chosen at game start', () => {
     const store = makeStore();
     store.startGame(['A'], { phase3Enabled: true, phase3Mode: 'plan' });

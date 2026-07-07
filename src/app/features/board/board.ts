@@ -70,11 +70,11 @@ interface Cell {
           <div class="mt-2 flex flex-col gap-2">
             @for (d of difficulties; track d) {
               <button
-                class="flex items-center gap-2.5 rounded-lg bg-input px-3 py-3 text-left transition hover:bg-white/10"
+                class="flex items-center gap-3 rounded-xl bg-input px-4 py-4 text-left transition hover:bg-white/10"
                 (click)="play(d)"
               >
-                <span class="inline-block h-2.5 w-2.5 rounded-full" [style.background]="diffDot(d)"></span>
-                <span class="flex-1 font-bold">{{ d }}</span>
+                <span class="inline-block h-3 w-3 rounded-full" [style.background]="diffDot(d)"></span>
+                <span class="flex-1 text-lg font-bold">{{ d }}</span>
                 <span class="text-sm text-muted"><b class="text-white">{{ points(d) }}</b> Punkte</span>
               </button>
             }
@@ -90,6 +90,7 @@ interface Cell {
                 <span class="text-muted">{{ $index + 1 }}</span>
                 <span class="inline-block h-2.5 w-2.5 rounded-full" [style.background]="color($index)"></span>
                 <span class="flex-1 font-medium" [class.text-muted]="isFinished($index)">{{ t }}</span>
+                <span class="text-xs text-muted">{{ store.turnsByTeam()[$index] ?? 0 }} Züge</span>
                 @if (isFinished($index)) { <span class="text-xs text-go">im Ziel</span> }
                 @else if (store.currentTeam() === $index) { <span class="text-xs text-ember">am Zug</span> }
               </li>
