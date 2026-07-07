@@ -49,20 +49,18 @@ const TEST_CARD: Card = {
           </div>
         </main>
       } @else {
-        <main class="mx-auto flex w-full max-w-xl flex-1 flex-col justify-center gap-4 p-6">
-          <p class="text-center text-xl font-bold">Wo liegt die <span class="text-ember-bright">4-Teilige Steckleiter</span>?</p>
-          <fwa-lf-sketch [picked]="picked()" [correct]="card.locations ?? []" [revealed]="picked() !== null" (pick)="picked.set($event)" />
-          @if (picked() !== null) {
-            <div class="text-center">
-              <p class="text-2xl font-black" [class.text-go]="correct()" [class.text-ember]="!correct()">
-                {{ correct() ? 'Richtig!' : 'Leider falsch' }}
-              </p>
-              <p class="mt-1 text-sm text-subtle">Richtiger Platz: <b class="text-white">{{ card.locations?.join(', ') }}</b></p>
-              <button class="mt-3 rounded-xl bg-ember px-10 py-3 text-lg font-bold text-white hover:bg-ember-bright" (click)="startGame()">Spiel starten →</button>
-            </div>
-          } @else {
-            <p class="text-center text-xs text-muted">Tippt das richtige Fach an — hier zählt es noch nicht.</p>
-          }
+        <main class="flex flex-1 flex-col items-center justify-center gap-4 overflow-y-auto p-4 landscape:flex-row landscape:gap-8">
+          <fwa-lf-sketch class="w-full max-w-md landscape:flex-1" [picked]="picked()" [correct]="card.locations ?? []" [revealed]="picked() !== null" (pick)="picked.set($event)" />
+          <div class="flex w-full max-w-sm flex-col items-center gap-3 text-center">
+            <p class="text-xl font-bold">Wo liegt die <span class="text-ember-bright">4-Teilige Steckleiter</span>?</p>
+            @if (picked() !== null) {
+              <p class="text-2xl font-black" [class.text-go]="correct()" [class.text-ember]="!correct()">{{ correct() ? 'Richtig!' : 'Leider falsch' }}</p>
+              <p class="text-sm text-subtle">Richtiger Platz: <b class="text-white">{{ card.locations?.join(', ') }}</b></p>
+              <button class="rounded-xl bg-ember px-10 py-3 text-lg font-bold text-white hover:bg-ember-bright" (click)="startGame()">Spiel starten →</button>
+            } @else {
+              <p class="text-xs text-muted">Tippt das richtige Fach an — hier zählt es noch nicht.</p>
+            }
+          </div>
         </main>
       }
     </div>

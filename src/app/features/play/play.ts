@@ -43,40 +43,29 @@ import { LfSketch } from '../../shared/lf-sketch';
         </main>
       } @else if (store.phase3Mode === 'plan') {
         <!-- ===== Am Plan: tap the Fach on the LF sketch (still on the clock) ===== -->
-        <main class="mx-auto flex w-full max-w-xl flex-1 flex-col justify-center gap-3 p-6">
-          <div class="text-center text-2xl font-black tabular-nums" [class.text-ember]="remaining() <= 5" [class.text-warn]="remaining() > 5 && remaining() <= 10">
-            ⏱ {{ remaining() }}s
-          </div>
-          <p class="text-center text-xl font-bold">
-            Wo liegt <span class="text-ember-bright">{{ card()?.term }}</span> auf dem LF?
-          </p>
+        <main class="flex flex-1 flex-col items-center justify-center gap-4 overflow-y-auto p-4 landscape:flex-row landscape:gap-8">
+          <fwa-lf-sketch class="w-full max-w-md landscape:flex-1" [picked]="picked()" [correct]="correctFachs()" [revealed]="picked() !== null" (pick)="pick($event)" />
 
-          <fwa-lf-sketch [picked]="picked()" [correct]="correctFachs()" [revealed]="picked() !== null" (pick)="pick($event)" />
+          <div class="flex w-full max-w-sm flex-col items-center gap-3 text-center">
+            <div class="text-2xl font-black tabular-nums" [class.text-ember]="remaining() <= 5" [class.text-warn]="remaining() > 5 && remaining() <= 10">⏱ {{ remaining() }}s</div>
+            <p class="text-xl font-bold">Wo liegt <span class="text-ember-bright">{{ card()?.term }}</span> auf dem LF?</p>
 
-          @if (picked() !== null) {
-            @if (correctFachs().length) {
-              <div class="text-center">
-                <p class="text-2xl font-black" [class.text-go]="placedCorrect()" [class.text-ember]="!placedCorrect()">
-                  {{ placedCorrect() ? 'Richtig!' : 'Leider falsch' }}
-                </p>
-                <p class="mt-1 text-sm text-subtle">
-                  Richtiger Platz: <b class="text-white">{{ correctFachs().join(', ') }}</b> ·
-                  {{ placedCorrect() ? store.currentPoints() + ' Felder' : 'kein Feld' }}
-                </p>
-                <button class="mt-3 rounded-xl bg-ember px-10 py-3 text-lg font-bold text-white hover:bg-ember-bright" (click)="resolvePlan()">Weiter</button>
-              </div>
-            } @else {
-              <div class="text-center">
+            @if (picked() !== null) {
+              @if (correctFachs().length) {
+                <p class="text-2xl font-black" [class.text-go]="placedCorrect()" [class.text-ember]="!placedCorrect()">{{ placedCorrect() ? 'Richtig!' : 'Leider falsch' }}</p>
+                <p class="text-sm text-subtle">Richtiger Platz: <b class="text-white">{{ correctFachs().join(', ') }}</b> · {{ placedCorrect() ? store.currentPoints() + ' Felder' : 'kein Feld' }}</p>
+                <button class="rounded-xl bg-ember px-10 py-3 text-lg font-bold text-white hover:bg-ember-bright" (click)="resolvePlan()">Weiter</button>
+              } @else {
                 <p class="text-sm text-muted">Gewählt: <b class="text-white">{{ picked() }}</b> — kein Platz hinterlegt, Schiedsrichter entscheidet.</p>
-                <div class="mt-2 flex justify-center gap-4">
+                <div class="flex justify-center gap-4">
                   <button class="rounded-xl bg-go px-8 py-3 text-lg font-bold text-white hover:brightness-110" (click)="phase3Resolve(true)">Korrekt</button>
                   <button class="rounded-xl bg-input px-8 py-3 text-lg font-bold hover:bg-white/10" (click)="phase3Resolve(false)">Falsch</button>
                 </div>
-              </div>
+              }
+            } @else {
+              <p class="text-xs text-muted">Tippt das richtige Fach an — die Zeit läuft weiter.</p>
             }
-          } @else {
-            <p class="text-center text-xs text-muted">Tippt das richtige Fach an — die Zeit läuft weiter.</p>
-          }
+          </div>
         </main>
       } @else {
         <!-- ===== Am Fahrzeug: moderator confirms (still on the clock) ===== -->
